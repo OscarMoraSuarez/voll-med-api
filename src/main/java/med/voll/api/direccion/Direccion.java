@@ -28,4 +28,15 @@ public class Direccion {
     }
 
 
+    public Direccion actualizarDatos(DatosDireccion direccion) {
+
+        this.calle= direccion.calle();
+        this.numero=direccion.numero();
+        this.distrito= direccion.distrito();
+        this.complemento= direccion.complemento();
+        this.ciudad=direccion.ciudad();
+        return this;
+
+
+    }
 }

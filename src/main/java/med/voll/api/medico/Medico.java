@@ -1,8 +1,6 @@
 package med.voll.api.medico;
 
 import jakarta.persistence.*;
-//import jakarta.validation.Valid;
-//import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,6 +22,7 @@ public class Medico {
     private String email;
     private String telefono;
     private String documento;
+    private Boolean activo;
     @Enumerated(EnumType.STRING)
     private Especialidad especialidad;
     @Embedded
@@ -31,6 +30,7 @@ public class Medico {
 
 
     public Medico(DatosRegistroMedico datosRegistroMedico) {
+        this.activo=true;
         this.nombre = datosRegistroMedico.nombre();
         this.email = datosRegistroMedico.email();
         this.documento = datosRegistroMedico.documento();
@@ -39,7 +39,22 @@ public class Medico {
         this.direccion = new Direccion(datosRegistroMedico.direccion());
 
     }
+    public void actualizarDatos(DatosActualizarMedico datosActualizarMedico) {
+        if(datosActualizarMedico.nombre()!=null){
+            this.nombre = datosActualizarMedico.nombre();
+        }
+        if(datosActualizarMedico.documento()!=null){
+            this.documento = datosActualizarMedico.documento();
+        }
+        if(datosActualizarMedico.direccion()!=null){
+            this.direccion= direccion.actualizarDatos(datosActualizarMedico.direccion());
+        }
 
 
 
+    }
+
+    public void desactivarMedico() {
+        this.activo=false;
+    }
 }
