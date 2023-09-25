@@ -1,4 +1,4 @@
-package med.voll.api.medico;
+package med.voll.api.Dominio.medico;
 
 public record DatosListadoMedico(Long id, String nombre,String  especialidad, String documento,String email) {
     //  este DTO esta especificando que datos quiero en especifico en ves de devolverlos todos
