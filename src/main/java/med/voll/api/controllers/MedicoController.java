@@ -1,13 +1,18 @@
 package med.voll.api.controllers;
 
 import jakarta.validation.Valid;
+import med.voll.api.direccion.DatosDireccion;
 import med.voll.api.medico.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController//le digo que es un RestController
 @RequestMapping("/medicos")//le digo la ruta http que recibe el payload
@@ -17,13 +22,18 @@ public class MedicoController {
     // para que instancie el repositorio
     @Autowired
     private MedicoRepository medicoRepository;
-    //private MedicoRepository medicoRepository;
-    @PostMapping//le digo que recibe del metodo post
-    public void RegistrarMedico(@RequestBody @Valid DatosRegistroMedico datoRegistroMedico){//le digo que este parametro es el requestBody
-        System.out.println(datoRegistroMedico);
-        // paso los datos a un constructor Medico porque el
-        medicoRepository.save(new Medico(datoRegistroMedico));
 
+    @PostMapping
+    public ResponseEntity<DatosRespuestaMedico> registrarMedico(@RequestBody @Valid DatosRegistroMedico datosRegistroMedico,UriComponentsBuilder uriComponentsBuilder) {
+        Medico medico = medicoRepository.save(new Medico(datosRegistroMedico));
+        DatosRespuestaMedico datosRespuestaMedico = new DatosRespuestaMedico(medico.getId(), medico.getNombre(), medico.getEmail(),
+                medico.getTelefono(), medico.getEspecialidad().toString(),
+                new DatosDireccion(medico.getDireccion().getCalle(), medico.getDireccion().getDistrito(),
+                        medico.getDireccion().getCiudad(), medico.getDireccion().getNumero(),
+                        medico.getDireccion().getComplemento()));
+
+        URI url = uriComponentsBuilder.path("/medicos/{id}").buildAndExpand(medico.getId()).toUri();
+        return ResponseEntity.created(url).body(datosRespuestaMedico);
 
     }
 
@@ -38,21 +48,27 @@ public class MedicoController {
 
     }*/
     @GetMapping// para la paginación se neceista retornar una pagina y trabajar iun parametro Pageable que llega desde el cliente
-    public Page<DatosListadoMedico> listadoMedicos(@PageableDefault(size =20) Pageable paginacion){
+    public ResponseEntity<Page<DatosListadoMedico>>listadoMedicos(@PageableDefault(size =20) Pageable paginacion){
         //la paginacion viene spring internamente ejecuta la misma query contra la bd trae la lista o array de entidad medico
         //internamente spring lo arregla y lo transforma a datos listado medico
         //return medicoRepository.findAll(paginacion).map(DatosListadoMedico::new);// en el repository no viene ningún metodo implementado pero extiende de una clase
                                      //como paginacion devuelve un page no se neceista the stream ni toList
-        return medicoRepository.findByActivoTrue(paginacion).map(DatosListadoMedico::new);
+        // ahora esta dentro de un wrapper que es el response entity wrapper para pas peticines http
+        return ResponseEntity.ok(medicoRepository.findByActivoTrue(paginacion).map(DatosListadoMedico::new));
     }                           // esta nomenclatura la usa spring Data JPA para crear dinamicamente las queries
                                 // y hacer el where en el select
     @PutMapping
     @Transactional
 // se cierra la transacción para que se actualice hibernatemapea que caundo termine ese metodo se libere la transaccion
-    public void actualizarMedico(@RequestBody @Valid DatosActualizarMedico datosActualizarMedico){
+    public ResponseEntity<DatosRespuestaMedico> actualizarMedico(@RequestBody @Valid DatosActualizarMedico datosActualizarMedico){
         System.out.println(datosActualizarMedico);
         Medico medico=medicoRepository.getReferenceById(datosActualizarMedico.id());
         medico.actualizarDatos(datosActualizarMedico);
+        return ResponseEntity.ok(new DatosRespuestaMedico(medico.getId(), medico.getNombre(), medico.getEmail(),
+                medico.getTelefono(), medico.getEspecialidad().toString(),
+                new DatosDireccion(medico.getDireccion().getCalle(), medico.getDireccion().getDistrito(),
+                        medico.getDireccion().getCiudad(), medico.getDireccion().getNumero(),
+                        medico.getDireccion().getComplemento())));
     }
     //JPA mapea el medico que se trae de la DB y cuando está en el contexto de JPA y una vez se actualizan los datos
     // como está dentro de la misma transaccion una vex que el metodo termina la transaccion termina, cunado la
@@ -66,11 +82,15 @@ public class MedicoController {
     @DeleteMapping("/{id}") // le indico es ques un pathvariable
 
     @Transactional
-    public void eliminarMedico(@PathVariable Long id){
+    public ResponseEntity eliminarMedico(@PathVariable Long id){
         //traigo el elemento con JPA
         Medico medico=medicoRepository.getReferenceById(id);// ya se cargo a nivel del repositorio
                                                             // ya se esta trabajando con la entidad aquí directamente
         medico.desactivarMedico();
+                              //internamente spring mapea la respuesta que yo quiero y debería retornar un 204
+                              //este emtodo dsetea el codigo http pero hay que convertirlo con build a un response entity
+         return ResponseEntity.noContent().build();
+
 
     }
 
@@ -84,6 +104,20 @@ public class MedicoController {
         medicoRepository.delete(medico);
 
     }*/
+
+    @GetMapping("/{id}") // le indico es ques un pathvariable
+    public ResponseEntity<DatosRespuestaMedico> retornaDatosMedico(@PathVariable Long id){
+
+        Medico medico=medicoRepository.getReferenceById(id);
+        var datosMedico=new DatosRespuestaMedico(medico.getId(), medico.getNombre(), medico.getEmail(),
+                medico.getTelefono(), medico.getEspecialidad().toString(),
+                new DatosDireccion(medico.getDireccion().getCalle(), medico.getDireccion().getDistrito(),
+                        medico.getDireccion().getCiudad(), medico.getDireccion().getNumero(),
+                        medico.getDireccion().getComplemento()));
+        return ResponseEntity.ok( datosMedico);
+
+
+    }
 
 
 }
