@@ -7,6 +7,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration// con esta anotacion va a venir y reconocer la configuracion, primero se escanean lso objetos @Configuracion
@@ -19,6 +21,16 @@ public class SecurityConfigurations {
         return httpSecurity.csrf(csrf -> csrf.disable())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
+
+        /*
+        *
+        * return httpSecurity
+    .csrf().disable()
+    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    .and()
+    .build();
+
+        * */
 
         /*
         * return httpSecurity
@@ -37,10 +49,16 @@ public class SecurityConfigurations {
         * */
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)throws Exception{
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+    @Bean //para que este disponible en el contexto de Spring
+    public PasswordEncoder passwordEncoder(){
+
+        return new BCryptPasswordEncoder();
 
     }
 
