@@ -2,6 +2,8 @@ package med.voll.api.controllers;
 
 import jakarta.validation.Valid;
 import med.voll.api.Dominio.usuarios.DatosAutenticacionUsuario;
+import med.voll.api.Dominio.usuarios.Usuario;
+import med.voll.api.infra.security.DatosJWTToken;
 import med.voll.api.infra.security.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +25,13 @@ public class AuthenticacionController {
     private TokenService tokenService;
     @PostMapping
     public ResponseEntity autenticarUsuario(@RequestBody @Valid DatosAutenticacionUsuario datosAutenticacionUsuario){
-        Authentication authToken= new UsernamePasswordAuthenticationToken(datosAutenticacionUsuario.login(),
+        Authentication   authToken= new UsernamePasswordAuthenticationToken(datosAutenticacionUsuario.login(),
                 datosAutenticacionUsuario.clave());
-        authtenticationManager.authenticate(authToken);
-        var JWTtoken=tokenService.GenerarToken();
-        //return ResponseEntity.ok().build();
-        return ResponseEntity.ok(JWTtoken);
+       var usuarioAutenticado =authtenticationManager.authenticate(authToken);// si es que la autenticacion es exitosa
+         var JWTtoken=tokenService.generarToken((Usuario) usuarioAutenticado.getPrincipal());// hay que enviarle un parametro de tipo Usuario
+        //return ResponseEntity.ok().build();   El principal es el objeto usuario que ya fue auth en el sistema
+        //return ResponseEntity.ok(JWTtoken);
+        return ResponseEntity.ok(new DatosJWTToken(JWTtoken));
 
 
     }
