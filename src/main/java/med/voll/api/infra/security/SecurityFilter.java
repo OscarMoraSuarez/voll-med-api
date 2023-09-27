@@ -20,7 +20,10 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("el filtro está siendo llamado");
+
+        var  token=request.getHeader("Authorization").replace("Bearer","");//para quitar el prefijo Bearer
+        System.out.println(token);
+
         filterChain.doFilter(request,response);// filtro ejecuta tu filtro y filtra esto y envia el reques y el response
                                                 // del metodo html
     }
