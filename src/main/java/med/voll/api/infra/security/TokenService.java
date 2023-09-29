@@ -3,6 +3,11 @@ package med.voll.api.infra.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+
+
+
 import med.voll.api.Dominio.usuarios.Usuario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,6 +36,26 @@ public class TokenService {
             throw new RuntimeException();
         }
 
+    }
+
+    public String getSubject(String token) {
+
+        DecodedJWT verifier = null;
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(apiSecret);// validando la firma del token
+            verifier = JWT.require(algorithm)
+                    .withIssuer("voll-med")// valida que el emisor sea voll-med
+                    .build()// hace el build del objeto verifier
+                    .verify(token);// verifica el token
+            verifier.getSubject();//obtenermos el subject
+        } catch (JWTVerificationException exception) {
+            System.out.println(exception.toString());
+        }
+        if (verifier.getSubject()==null){
+            throw new RuntimeException("verifier invalido");
+        }
+
+        return verifier.getSubject();
     }
 
     private Instant generarFechaExpiracion(){//metodo creado para devolver un instante en que se cierre la sesion

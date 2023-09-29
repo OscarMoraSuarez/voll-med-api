@@ -22,31 +22,6 @@ public class SecurityConfigurations {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
 
-        /*
-        *
-        * return httpSecurity
-    .csrf().disable()
-    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-    .and()
-    .build();
-
-        * */
-
-        /*
-        * return httpSecurity
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                        .requestMatchers(HttpMethod.POST, "/login")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()
-                )
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-        * */
     }
 
 
@@ -58,8 +33,9 @@ public class SecurityConfigurations {
     @Bean //para que este disponible en el contexto de Spring
     public PasswordEncoder passwordEncoder(){
 
-        return new BCryptPasswordEncoder();
-
+        return new BCryptPasswordEncoder();// se le especifica que tipo de algoritmose usa para la encriptacion
+        // es decir par aque use ese Bcrypt y encrupte el password ingresado por el user y haga match al hacer
+        // comparacion con el que está almacenado
     }
 
 
